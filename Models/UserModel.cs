@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 namespace Meloman.Models
 {
     public class User

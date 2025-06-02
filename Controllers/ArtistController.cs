@@ -10,87 +10,87 @@ using Meloman.Models;
 
 namespace Meloman.Controllers
 {
-    public class TrackController : Controller
+    public class ArtistController : Controller
     {
-        private readonly MvcTrackContext _context;
+        private readonly MelomanContext _context;
 
-        public TrackController(MvcTrackContext context)
+        public ArtistController(MelomanContext context)
         {
             _context = context;
         }
 
-        // GET: Track
+        // GET: Artist
         public async Task<IActionResult> Index()
         {
-              return _context.Track != null ? 
-                          View(await _context.Track.ToListAsync()) :
-                          Problem("Entity set 'MvcTrackContext.Track'  is null.");
+              return _context.Artist != null ? 
+                          View(await _context.Artist.ToListAsync()) :
+                          Problem("Entity set 'MelomanContext.Artist'  is null.");
         }
 
-        // GET: Track/Details/5
+        // GET: Artist/Details/5
         public async Task<IActionResult> Details(int? id)
         {
-            if (id == null || _context.Track == null)
+            if (id == null || _context.Artist == null)
             {
                 return NotFound();
             }
 
-            var track = await _context.Track
+            var artist = await _context.Artist
                 .FirstOrDefaultAsync(m => m.Id == id);
-            if (track == null)
+            if (artist == null)
             {
                 return NotFound();
             }
 
-            return View(track);
+            return View(artist);
         }
 
-        // GET: Track/Create
+        // GET: Artist/Create
         public IActionResult Create()
         {
             return View();
         }
 
-        // POST: Track/Create
+        // POST: Artist/Create
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Name")] Track track)
+        public async Task<IActionResult> Create([Bind("Id,Name,Surname,BirthDate")] Artist artist)
         {
             if (ModelState.IsValid)
             {
-                _context.Add(track);
+                _context.Add(artist);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            return View(track);
+            return View(artist);
         }
 
-        // GET: Track/Edit/5
+        // GET: Artist/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
-            if (id == null || _context.Track == null)
+            if (id == null || _context.Artist == null)
             {
                 return NotFound();
             }
 
-            var track = await _context.Track.FindAsync(id);
-            if (track == null)
+            var artist = await _context.Artist.FindAsync(id);
+            if (artist == null)
             {
                 return NotFound();
             }
-            return View(track);
+            return View(artist);
         }
 
-        // POST: Track/Edit/5
+        // POST: Artist/Edit/5
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name")] Track track)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Surname,BirthDate")] Artist artist)
         {
-            if (id != track.Id)
+            if (id != artist.Id)
             {
                 return NotFound();
             }
@@ -99,12 +99,12 @@ namespace Meloman.Controllers
             {
                 try
                 {
-                    _context.Update(track);
+                    _context.Update(artist);
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!TrackExists(track.Id))
+                    if (!ArtistExists(artist.Id))
                     {
                         return NotFound();
                     }
@@ -115,49 +115,49 @@ namespace Meloman.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            return View(track);
+            return View(artist);
         }
 
-        // GET: Track/Delete/5
+        // GET: Artist/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
-            if (id == null || _context.Track == null)
+            if (id == null || _context.Artist == null)
             {
                 return NotFound();
             }
 
-            var track = await _context.Track
+            var artist = await _context.Artist
                 .FirstOrDefaultAsync(m => m.Id == id);
-            if (track == null)
+            if (artist == null)
             {
                 return NotFound();
             }
 
-            return View(track);
+            return View(artist);
         }
 
-        // POST: Track/Delete/5
+        // POST: Artist/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            if (_context.Track == null)
+            if (_context.Artist == null)
             {
-                return Problem("Entity set 'MvcTrackContext.Track'  is null.");
+                return Problem("Entity set 'MelomanContext.Artist'  is null.");
             }
-            var track = await _context.Track.FindAsync(id);
-            if (track != null)
+            var artist = await _context.Artist.FindAsync(id);
+            if (artist != null)
             {
-                _context.Track.Remove(track);
+                _context.Artist.Remove(artist);
             }
             
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
-        private bool TrackExists(int id)
+        private bool ArtistExists(int id)
         {
-          return (_context.Track?.Any(e => e.Id == id)).GetValueOrDefault();
+          return (_context.Artist?.Any(e => e.Id == id)).GetValueOrDefault();
         }
     }
 }

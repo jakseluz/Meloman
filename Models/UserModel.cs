@@ -6,9 +6,8 @@ namespace Meloman.Models
         [Key]
         public int Id { get; set; }
         [Display(Name = "Name")]
-        public String Name { get; set; }
+        public required string Name { get; set; }
         [Display(Name = "Surname")]
-        public String Surname { get; set; }
-
+        public required string Surname { get; set; }
     }
 }

@@ -2,8 +2,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Meloman.Data;
 var builder = WebApplication.CreateBuilder(args);
-builder.Services.AddDbContext<MvcTrackContext>(options =>
-    options.UseSqlite(builder.Configuration.GetConnectionString("MvcTrackContext") ?? throw new InvalidOperationException("Connection string 'MvcTrackContext' not found.")));
+builder.Services.AddDbContext<MelomanContext>(options =>
+    options.UseSqlite(builder.Configuration.GetConnectionString("MelomanContext") ?? throw new InvalidOperationException("Connection string 'MelomanContext' not found.")));
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();

@@ -7,13 +7,13 @@ using Meloman.Models;
 
 namespace Meloman.Data
 {
-    public class MvcTrackContext : DbContext
+    public class MelomanContext : DbContext
     {
-        public MvcTrackContext (DbContextOptions<MvcTrackContext> options)
+        public MelomanContext (DbContextOptions<MelomanContext> options)
             : base(options)
         {
         }
 
-        public DbSet<Meloman.Models.Track> Track { get; set; } = default!;
+        public DbSet<Meloman.Models.Artist> Artist { get; set; } = default!;
     }
 }

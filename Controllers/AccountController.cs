@@ -13,6 +13,8 @@ namespace Meloman.Controllers
 {
     public class AccountController : Controller
     {
+        public static readonly string UserIdKey = "UserId";
+        public static readonly string UserNameKey = "Username";
         private readonly MelomanContext _context;
 
         public AccountController(MelomanContext context)
@@ -88,21 +90,21 @@ namespace Meloman.Controllers
             }
 
             var user = await _context.User.FirstOrDefaultAsync(u => u.Username == username);
-            bool valid = false;
 
-            if (user != null)
-            {
-                valid = PasswordHelper.VerifyPassword(password, user.PasswordHash, user.Salt);
-            }
-
-            if (!valid)
+            if (user == null)
             {
                 ViewBag.Error = "Incorrect login or password.";
                 return View();
             }
 
-            HttpContext.Session.SetInt32("UserId", user.Id);
-            HttpContext.Session.SetString("Username", user.Username);
+            if (!PasswordHelper.VerifyPassword(password, user.PasswordHash, user.Salt))
+            {
+                ViewBag.Error = "Incorrect login or password.";
+                return View();
+            }
+
+            HttpContext.Session.SetInt32(UserIdKey, user.Id);
+            HttpContext.Session.SetString(UserNameKey, user.Username);
 
             return RedirectToAction("Index", "Home");
         }
@@ -111,8 +113,8 @@ namespace Meloman.Controllers
         [HttpGet]
         public IActionResult Logout()
         {
-            HttpContext.Session.Remove("UserId");
-            HttpContext.Session.Remove("Username");
+            HttpContext.Session.Remove(UserIdKey);
+            HttpContext.Session.Remove(UserNameKey);
             return RedirectToAction("Index", "Home");
         }
     }

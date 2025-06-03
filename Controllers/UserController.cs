@@ -20,13 +20,18 @@ namespace Meloman.Controllers
             _context = context;
         }
 
+        private void PrepareRoles()
+        {
+            ViewBag.RoleList = new SelectList(new List<string> { "admin", "user", "" });
+        }
+
         // GET: User
         [ServiceFilter(typeof(AdminAllowedAttribute))]
         public async Task<IActionResult> Index()
         {
-            return _context.User != null ?
-                        View(await _context.User.ToListAsync()) :
-                        Problem("Entity set 'MelomanContext.User'  is null.");
+              return _context.User != null ? 
+                          View(await _context.User.ToListAsync()) :
+                          Problem("Entity set 'MelomanContext.User'  is null.");
         }
 
         // GET: User/Details/5
@@ -50,6 +55,7 @@ namespace Meloman.Controllers
         // GET: User/Create
         public IActionResult Create()
         {
+            PrepareRoles();
             return View();
         }
 
@@ -58,7 +64,7 @@ namespace Meloman.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Name,Surname")] User user)
+        public async Task<IActionResult> Create([Bind("Id,Username,PasswordHash,Salt,Role")] User user)
         {
             if (ModelState.IsValid)
             {
@@ -66,6 +72,8 @@ namespace Meloman.Controllers
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
+
+            PrepareRoles();
             return View(user);
         }
 
@@ -82,6 +90,8 @@ namespace Meloman.Controllers
             {
                 return NotFound();
             }
+
+            PrepareRoles();
             return View(user);
         }
 
@@ -90,7 +100,7 @@ namespace Meloman.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Surname")] User user)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Username,PasswordHash,Salt,Role")] User user)
         {
             if (id != user.Id)
             {
@@ -117,6 +127,8 @@ namespace Meloman.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
+
+            PrepareRoles();
             return View(user);
         }
 

@@ -9,6 +9,7 @@ using Meloman.Data;
 using Meloman.Models;
 using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.IdentityModel.Tokens;
+using Meloman.Filters;
 
 namespace Meloman.Controllers
 {
@@ -22,6 +23,7 @@ namespace Meloman.Controllers
         }
 
         // GET: Artist
+        [ServiceFilter(typeof(VerifiedUserAllowed))]
         public async Task<IActionResult> Index()
         {
             if (_context.Artist == null)

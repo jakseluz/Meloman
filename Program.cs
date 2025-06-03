@@ -13,7 +13,9 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<MelomanContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("MelomanContext") ?? throw new InvalidOperationException("Connection string 'MelomanContext' not found.")));
 
+// Add POST and GET methods attributes
 builder.Services.AddScoped<AdminAllowedAttribute>();
+builder.Services.AddScoped<VerifiedUserAllowed>();
 
 // Add services to the container. Add controllers with views.
 builder.Services.AddControllersWithViews();

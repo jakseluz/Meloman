@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Meloman.Data;
 using Meloman.Models;
+using Meloman.Filters;
 
 namespace Meloman.Controllers
 {
@@ -20,11 +21,12 @@ namespace Meloman.Controllers
         }
 
         // GET: CategoryMark
+        [ServiceFilter(typeof(VerifiedUserAllowed))]
         public async Task<IActionResult> Index()
         {
-              return _context.CategoryMark != null ? 
-                          View(await _context.CategoryMark.ToListAsync()) :
-                          Problem("Entity set 'MelomanContext.CategoryMark'  is null.");
+            return _context.CategoryMark != null ?
+                        View(await _context.CategoryMark.ToListAsync()) :
+                        Problem("Entity set 'MelomanContext.CategoryMark'  is null.");
         }
 
         // GET: CategoryMark/Details/5

@@ -66,11 +66,6 @@ namespace Meloman.Controllers
             _context.User.Add(user);
             await _context.SaveChangesAsync();
 
-            /* logowanie od razu 
-            HttpContext.Session.SetInt32("UserId", user.Id);
-            HttpContext.Session.SetString("Username", user.Username);
-            */
-
             return RedirectToAction("Login", "Account");
         }
 

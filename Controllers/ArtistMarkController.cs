@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Meloman.Data;
 using Meloman.Models;
+using Meloman.Filters;
 
 namespace Meloman.Controllers
 {
@@ -20,11 +21,12 @@ namespace Meloman.Controllers
         }
 
         // GET: ArtistMark
+        [ServiceFilter(typeof(VerifiedUserAllowed))]
         public async Task<IActionResult> Index()
         {
-              return _context.ArtistMark != null ? 
-                          View(await _context.ArtistMark.ToListAsync()) :
-                          Problem("Entity set 'MelomanContext.ArtistMark'  is null.");
+            return _context.ArtistMark != null ?
+                        View(await _context.ArtistMark.ToListAsync()) :
+                        Problem("Entity set 'MelomanContext.ArtistMark'  is null.");
         }
 
         // GET: ArtistMark/Details/5

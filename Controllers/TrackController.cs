@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Meloman.Data;
 using Meloman.Models;
+using Meloman.Filters;
 
 namespace Meloman.Controllers
 {
@@ -20,11 +21,12 @@ namespace Meloman.Controllers
         }
 
         // GET: Track
+        [ServiceFilter(typeof(VerifiedUserAllowed))]
         public async Task<IActionResult> Index()
         {
-              return _context.Track != null ? 
-                          View(await _context.Track.ToListAsync()) :
-                          Problem("Entity set 'MelomanContext.Track'  is null.");
+            return _context.Track != null ?
+                        View(await _context.Track.ToListAsync()) :
+                        Problem("Entity set 'MelomanContext.Track'  is null.");
         }
 
         // GET: Track/Details/5

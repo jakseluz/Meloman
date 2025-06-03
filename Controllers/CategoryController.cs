@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Meloman.Data;
 using Meloman.Models;
+using Meloman.Filters;
 
 namespace Meloman.Controllers
 {
@@ -20,6 +21,7 @@ namespace Meloman.Controllers
         }
 
         // GET: Category
+        [ServiceFilter(typeof(VerifiedUserAllowed))]
         public async Task<IActionResult> Index()
         {
             if (_context.Category == null)

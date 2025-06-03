@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Meloman.Data;
 using Meloman.Models;
+using Microsoft.EntityFrameworkCore.Internal;
+using Microsoft.IdentityModel.Tokens;
 
 namespace Meloman.Controllers
 {
@@ -22,9 +24,16 @@ namespace Meloman.Controllers
         // GET: Artist
         public async Task<IActionResult> Index()
         {
-              return _context.Artist != null ? 
-                          View(await _context.Artist.ToListAsync()) :
-                          Problem("Entity set 'MelomanContext.Artist'  is null.");
+            if (_context.Artist == null)
+            {
+                return Problem("Entity set 'MelomanContext.Artist'  is null.");
+            }
+            var artists = await _context.Artist.ToListAsync();
+            return View(artists.Select(artist =>
+            {
+                artist.Mark = GetArtistMarkValue(artist);
+                return artist;
+            }));
         }
 
         // GET: Artist/Details/5
@@ -37,10 +46,13 @@ namespace Meloman.Controllers
 
             var artist = await _context.Artist
                 .FirstOrDefaultAsync(m => m.Id == id);
+
             if (artist == null)
             {
                 return NotFound();
             }
+
+            artist.Mark = GetArtistMarkValue(artist);
 
             return View(artist);
         }
@@ -56,11 +68,12 @@ namespace Meloman.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Name,Surname,BirthDate")] Artist artist)
+        public async Task<IActionResult> Create([Bind("Id,Name,Surname,BirthDate,Mark")] Artist artist)
         {
             if (ModelState.IsValid)
             {
                 _context.Add(artist);
+                _context.Add(new ArtistMark { Id = 0, Artist = artist, User = null, Mark = artist.Mark });
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
@@ -80,6 +93,7 @@ namespace Meloman.Controllers
             {
                 return NotFound();
             }
+            artist.Mark = GetArtistMarkValue(artist);
             return View(artist);
         }
 
@@ -88,7 +102,7 @@ namespace Meloman.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Surname,BirthDate")] Artist artist)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Surname,BirthDate,Mark")] Artist artist)
         {
             if (id != artist.Id)
             {
@@ -100,6 +114,17 @@ namespace Meloman.Controllers
                 try
                 {
                     _context.Update(artist);
+                    var mark = GetArtistMark(artist);
+                    if (mark == null && artist.Mark != null)
+                    {
+                        _context.Add(new ArtistMark { Id = 0, Artist = artist, User = null, Mark = artist.Mark });
+                    }
+                    else if (mark != null)
+                    {
+                        mark.Mark = artist.Mark;
+                        _context.Update(mark);
+                    }
+
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
@@ -132,6 +157,7 @@ namespace Meloman.Controllers
             {
                 return NotFound();
             }
+            artist.Mark = GetArtistMarkValue(artist);
 
             return View(artist);
         }
@@ -148,16 +174,59 @@ namespace Meloman.Controllers
             var artist = await _context.Artist.FindAsync(id);
             if (artist != null)
             {
+                var mark = GetArtistMark(artist);
+                if (mark != null)
+                {
+                    _context.ArtistMark.Remove(mark);
+                }
                 _context.Artist.Remove(artist);
             }
-            
+
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
         private bool ArtistExists(int id)
         {
-          return (_context.Artist?.Any(e => e.Id == id)).GetValueOrDefault();
+            return (_context.Artist?.Any(e => e.Id == id)).GetValueOrDefault();
+        }
+
+        private ArtistMark? GetArtistMark(Artist artist)
+        {
+            if (_context.ArtistMark == null)
+            {
+                return null;
+            }
+
+            var res = from mark in _context.ArtistMark
+                      where mark.Artist == artist
+                      select mark;
+
+            if (res == null)
+            {
+                return null;
+            }
+
+            var enumRes = res.AsEnumerable();
+
+            if (!enumRes.Any())
+            {
+                return null;
+            }
+
+            return enumRes.AsEnumerable().ElementAt(0);
+
+        }
+
+        private double? GetArtistMarkValue(Artist artist)
+        {
+            var mark = GetArtistMark(artist);
+            if (mark == null)
+            {
+                return ArtistMark.defaultMark;
+            }
+
+            return mark.Mark;
         }
     }
 }

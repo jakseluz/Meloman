@@ -3,11 +3,13 @@ namespace Meloman.Models
 {
     public class CategoryMark
     {
+        public static readonly double? DefaultMark = null;
         [Key]
         public int Id { get; set; }
         public Category? Category { get; set; }
         public User? User { get; set; }
         [Display(Name = "Mark")]
-        public int Mark = 0;
+        [DisplayFormat(NullDisplayText = "0")]
+        public double? Mark { get; set; }
     }
 }

@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace Meloman.Migrations
+namespace Meloman4.Migrations
 {
     [DbContext(typeof(MelomanContext))]
     partial class MelomanContextModelSnapshot : ModelSnapshot
@@ -47,6 +47,9 @@ namespace Meloman.Migrations
 
                     b.Property<int?>("ArtistId")
                         .HasColumnType("INTEGER");
+
+                    b.Property<double?>("Mark")
+                        .HasColumnType("REAL");
 
                     b.Property<int?>("UserId")
                         .HasColumnType("INTEGER");
@@ -88,6 +91,9 @@ namespace Meloman.Migrations
 
                     b.Property<int?>("CategoryId")
                         .HasColumnType("INTEGER");
+
+                    b.Property<double?>("Mark")
+                        .HasColumnType("REAL");
 
                     b.Property<int?>("UserId")
                         .HasColumnType("INTEGER");
@@ -132,6 +138,9 @@ namespace Meloman.Migrations
 
                     b.Property<string>("PasswordHash")
                         .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Role")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Salt")

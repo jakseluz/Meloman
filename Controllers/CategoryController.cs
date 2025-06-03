@@ -22,9 +22,19 @@ namespace Meloman.Controllers
         // GET: Category
         public async Task<IActionResult> Index()
         {
-              return _context.Category != null ? 
-                          View(await _context.Category.ToListAsync()) :
-                          Problem("Entity set 'MelomanContext.Category'  is null.");
+            if (_context.Category == null)
+            {
+                return Problem("Entity set 'MelomanContext.Artist'  is null.");
+            }
+            var categories = await _context.Category.ToListAsync();
+            return View(categories.Select(category =>
+            {
+                category.Mark = GetCategoryMarkValue(category);
+                return category;
+            }));
+            // return _context.Category != null ?
+            //             View(await _context.Category.ToListAsync()) :
+            //             Problem("Entity set 'MelomanContext.Category'  is null.");
         }
 
         // GET: Category/Details/5
@@ -41,6 +51,7 @@ namespace Meloman.Controllers
             {
                 return NotFound();
             }
+            category.Mark = GetCategoryMarkValue(category);
 
             return View(category);
         }
@@ -56,11 +67,21 @@ namespace Meloman.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Name")] Category category)
+        public async Task<IActionResult> Create([Bind("Id,Name,Mark")] Category category)
         {
             if (ModelState.IsValid)
             {
                 _context.Add(category);
+                if (category.Mark != null)
+                {
+                    _context.Add(new CategoryMark
+                    {
+                        Id = 0,
+                        Category = category,
+                        User = null,
+                        Mark = category.Mark
+                    });
+                }
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
@@ -80,6 +101,7 @@ namespace Meloman.Controllers
             {
                 return NotFound();
             }
+            category.Mark = GetCategoryMarkValue(category);
             return View(category);
         }
 
@@ -88,7 +110,7 @@ namespace Meloman.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name")] Category category)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Mark")] Category category)
         {
             if (id != category.Id)
             {
@@ -100,6 +122,18 @@ namespace Meloman.Controllers
                 try
                 {
                     _context.Update(category);
+                    var mark = GetCategoryMark(category);
+
+                    if (mark == null && category.Mark != null)
+                    {
+                        _context.Add(new CategoryMark { Id = 0, Category = category, User = null, Mark = category.Mark });
+                    }
+                    else if (mark != null)
+                    {
+                        mark.Mark = category.Mark;
+                        _context.Update(mark);
+                    }
+
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
@@ -132,6 +166,7 @@ namespace Meloman.Controllers
             {
                 return NotFound();
             }
+            category.Mark = GetCategoryMarkValue(category);
 
             return View(category);
         }
@@ -148,16 +183,59 @@ namespace Meloman.Controllers
             var category = await _context.Category.FindAsync(id);
             if (category != null)
             {
+                var mark = GetCategoryMark(category);
+                if (mark != null)
+                {
+                    _context.CategoryMark.Remove(mark);
+                }
                 _context.Category.Remove(category);
             }
-            
+
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
         private bool CategoryExists(int id)
         {
-          return (_context.Category?.Any(e => e.Id == id)).GetValueOrDefault();
+            return (_context.Category?.Any(e => e.Id == id)).GetValueOrDefault();
+        }
+
+        private CategoryMark? GetCategoryMark(Category category)
+        {
+            if (_context.CategoryMark == null)
+            {
+                return null;
+            }
+
+            var res = from mark in _context.CategoryMark
+                      where mark.Category == category
+                      select mark;
+
+            if (res == null)
+            {
+                return null;
+            }
+
+            var enumRes = res.AsEnumerable();
+
+            if (!enumRes.Any())
+            {
+                return null;
+            }
+
+            return enumRes.AsEnumerable().ElementAt(0);
+
+        }
+
+        private double? GetCategoryMarkValue(Category category)
+        {
+            var mark = GetCategoryMark(category);
+            if (mark == null)
+            {
+                return ArtistMark.defaultMark;
+            }
+
+            return mark.Mark;
         }
     }
 }

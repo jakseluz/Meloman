@@ -56,7 +56,7 @@ namespace Meloman.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Username,PasswordHash,Salt")] User user)
+        public async Task<IActionResult> Create([Bind("Id,Name,Surname")] User user)
         {
             if (ModelState.IsValid)
             {
@@ -88,7 +88,7 @@ namespace Meloman.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Username,PasswordHash,Salt")] User user)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Surname")] User user)
         {
             if (id != user.Id)
             {

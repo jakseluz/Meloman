@@ -2,11 +2,22 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Meloman.Data;
 var builder = WebApplication.CreateBuilder(args);
+
+// Add DbContext from SQLite
 builder.Services.AddDbContext<MelomanContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("MelomanContext") ?? throw new InvalidOperationException("Connection string 'MelomanContext' not found.")));
 
-// Add services to the container.
+// Add services to the container. Add controllers with views.
 builder.Services.AddControllersWithViews();
+
+// Add session handling
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromMinutes(15);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+});
 
 var app = builder.Build();
 
@@ -22,6 +33,8 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
+
+app.UseSession(); // add session before authorization
 
 app.UseAuthorization();
 

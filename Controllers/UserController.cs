@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Meloman.Data;
 using Meloman.Models;
+using Meloman.Filters;
 
 namespace Meloman.Controllers
 {
@@ -20,11 +21,12 @@ namespace Meloman.Controllers
         }
 
         // GET: User
+        [ServiceFilter(typeof(AdminAllowedAttribute))]
         public async Task<IActionResult> Index()
         {
-              return _context.User != null ? 
-                          View(await _context.User.ToListAsync()) :
-                          Problem("Entity set 'MelomanContext.User'  is null.");
+            return _context.User != null ?
+                        View(await _context.User.ToListAsync()) :
+                        Problem("Entity set 'MelomanContext.User'  is null.");
         }
 
         // GET: User/Details/5

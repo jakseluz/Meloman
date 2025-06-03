@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Meloman.Data;
+using Meloman.Filters;
 
 var cultureInfo = new System.Globalization.CultureInfo("en-US");
 Thread.CurrentThread.CurrentCulture = cultureInfo;
@@ -11,6 +12,8 @@ var builder = WebApplication.CreateBuilder(args);
 // Add DbContext from SQLite
 builder.Services.AddDbContext<MelomanContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("MelomanContext") ?? throw new InvalidOperationException("Connection string 'MelomanContext' not found.")));
+
+builder.Services.AddScoped<AdminAllowedAttribute>();
 
 // Add services to the container. Add controllers with views.
 builder.Services.AddControllersWithViews();

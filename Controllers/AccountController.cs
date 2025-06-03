@@ -34,13 +34,7 @@ namespace Meloman.Controllers
         {
             if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
             {
-                ViewBag.Error = "Należy wypełnić wszystkie pola.";
-                return View();
-            }
-
-            if (password != confirmPassword)
-            {
-                ViewBag.Error = "Hasła nie mogą się różnić!";
+                ViewBag.Error = "All fields must be filled.";
                 return View();
             }
 
@@ -49,7 +43,13 @@ namespace Meloman.Controllers
 
             if (existingUser != null)
             {
-                ViewBag.Error = "Użytkownik jest już zarejestrowany!";
+                ViewBag.Error = "User already registered!";
+                return View();
+            }
+
+            if (password != confirmPassword)
+            {
+                ViewBag.Error = "Passwords cannot be different!";
                 return View();
             }
 
@@ -71,7 +71,7 @@ namespace Meloman.Controllers
             HttpContext.Session.SetString("Username", user.Username);
             */
 
-            return RedirectToAction("Index", "Home");
+            return RedirectToAction("Login", "Account");
         }
 
         // GET: /Account/Login
@@ -88,7 +88,7 @@ namespace Meloman.Controllers
         {
             if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
             {
-                ViewBag.Error = "Należy wypełnić oba pola.";
+                ViewBag.Error = "Both fileds must be filled.";
                 return View();
             }
 
@@ -102,7 +102,7 @@ namespace Meloman.Controllers
 
             if (!valid)
             {
-                ViewBag.Error = "Nieprawidłowy login lub hasło.";
+                ViewBag.Error = "Incorrect login or password.";
                 return View();
             }
 

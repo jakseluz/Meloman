@@ -1,6 +1,11 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Meloman.Data;
+
+var cultureInfo = new System.Globalization.CultureInfo("en-US");
+Thread.CurrentThread.CurrentCulture = cultureInfo;
+Thread.CurrentThread.CurrentUICulture = cultureInfo;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add DbContext from SQLite
@@ -29,6 +34,17 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
+var supportedCultures = new[] { cultureInfo };
+
+var localizationOptions = new RequestLocalizationOptions
+{
+    DefaultRequestCulture = new Microsoft.AspNetCore.Localization.RequestCulture("pl-PL"),
+    SupportedCultures = supportedCultures,
+    SupportedUICultures = supportedCultures
+};
+
+app.UseRequestLocalization(localizationOptions);
+
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
@@ -41,5 +57,16 @@ app.UseAuthorization();
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
+
+
+// Data seed
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    var context = services.GetRequiredService<MelomanContext>();
+    context.Database.Migrate(); // context.Database.EnsureCreated();
+    DbInitializer.Initialize(context);
+}
+
 
 app.Run();

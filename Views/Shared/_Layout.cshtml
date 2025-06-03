@@ -25,21 +25,18 @@
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
                         </li>
-                        @if (Context.Session.GetInt32("UserId") != null)
-                        {
-                            <div style="margin-left: 85%;">
-                                <span>Welcome, @Context.Session.GetString("Username")!</span>
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Account" asp-action="Logout">Log out</a>
-                            </div>
-                        }
-                        else
-                        {
-                            <div style="margin-left: 85%;">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Account" asp-action="Login">Sign in</a>
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Account" asp-action="Register">Sign up</a>
-                            </div>
-                        }
-
+                        <li style="right: 5%; position: absolute; display: flex;">
+                            @if (Context.Session.GetInt32("UserId") != null)
+                            {
+                                    <span>Welcome, @Context.Session.GetString("Username")!</span>
+                                    <a class="nav-link text-dark" asp-area="" asp-controller="Account" asp-action="Logout">Log out</a>
+                            }
+                            else
+                            {
+                                    <a class="nav-link text-dark" asp-area="" asp-controller="Account" asp-action="Login">Sign in</a>
+                                    <a class="nav-link text-dark" asp-area="" asp-controller="Account" asp-action="Register">Sign up</a>
+                            }
+                        </li>
                     </ul>
                 </div>
             </div>

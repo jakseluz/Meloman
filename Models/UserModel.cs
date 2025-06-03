@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.Runtime.InteropServices;
 namespace Meloman.Models
 {
     public class User
@@ -15,8 +16,6 @@ namespace Meloman.Models
         [Required]
         public required string Salt { get; set; }
 
-        // Dodatkowe pola (opcjonalnie): Email, DataRejestracji, Rola itp.
-        // [Required, EmailAddress]
-        // public string Email { get; set; }
+        public string ?Role { get; set; }
     }
 }

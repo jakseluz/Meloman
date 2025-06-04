@@ -137,7 +137,7 @@ namespace Meloman.Controllers
                 {
                     _context.Add(new CategoryMark
                     {
-                        Category = category,
+                        CategoryId = category.Id,
                         UserId = currentUser.Id,
                         Mark = category.Mark
                     });
@@ -224,7 +224,7 @@ namespace Meloman.Controllers
 
                     if (mark == null && category.Mark != null)
                     {
-                        _context.Add(new CategoryMark { Category = category, UserId = currentUser.Id, Mark = category.Mark });
+                        _context.Add(new CategoryMark { CategoryId = category.Id, UserId = currentUser.Id, Mark = category.Mark });
                     }
                     else if (mark != null)
                     {
@@ -340,7 +340,7 @@ namespace Meloman.Controllers
             }
 
             var res = from mark in _context.CategoryMark
-                      where mark.Category == category
+                      where mark.CategoryId == category.Id
                       select mark;
 
             if (res == null)

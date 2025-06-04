@@ -48,11 +48,11 @@ namespace Meloman.Controllers
                 var categoryScore = allCategories.Where(
                     mark =>
                     {
-                        Console.WriteLine($"mark?.Category?.Id == t.CategoryId {mark?.Category?.Id == t.CategoryId}");
+                        Console.WriteLine($"mark?.Category?.Id == t.CategoryId {mark?.CategoryId == t.CategoryId}");
                         Console.WriteLine($"mark.UserId == currentUser.Id {mark.UserId == currentUser.Id}");
                         Console.WriteLine($"mark: {mark.Mark}");
-                        Console.WriteLine($"--- mark.Category == null: {mark.Category == null}");
-                        return mark?.Category?.Id == t.CategoryId && mark.UserId == currentUser.Id;
+                        Console.WriteLine($"--- mark.Category == null: {mark.CategoryId == null}");
+                        return mark?.CategoryId == t.CategoryId && mark.UserId == currentUser.Id;
                     }
                     ).FirstOrDefault()?.Mark;
                 Console.WriteLine($"categoryScore: {categoryScore}");

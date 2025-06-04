@@ -25,6 +25,9 @@ namespace Meloman.Models
         [NotMapped]
         [Display(Name = "Category")]
         public string? Category { get; set; }
+        [NotMapped]
+        [Display(Name = "Mark")]
+        public double? Mark { get; set; }
 
     }
 }

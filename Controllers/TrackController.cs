@@ -40,8 +40,33 @@ namespace Meloman.Controllers
             {
                 return Problem("Entity set 'MelomanContext.Track'  is null.");
             }
-            var tracks = await _context.Track.ToListAsync();
-            return View(tracks);
+            var allCategories = _context.CategoryMark.ToList();
+            var allArtists = _context.ArtistMark.ToList();
+            var scoredTracks = _context.Track.ToList().Select(t =>
+            {
+                var categoryScore = allCategories.Where(
+                    mark => mark?.Category?.Id == t.CategoryId && mark?.UserId == currentUser.Id
+                    ).FirstOrDefault()?.Mark;
+
+                var artistScore = allArtists.Where(
+                    mark => mark?.ArtistId == t.AuthorId && mark?.UserId == currentUser.Id
+                    ).FirstOrDefault()?.Mark;
+
+                double sum = 0;
+                if (categoryScore != null)
+                {
+                    sum += (double)categoryScore;
+                }
+                if (artistScore != null)
+                {
+                    sum += (double)artistScore;
+                }
+                t.Mark = sum;
+                return t;
+            });
+            var sorted = scoredTracks.OrderByDescending(o => o.Mark);
+
+            return View(sorted);
         }
 
         // GET: Track/Details/5
@@ -76,19 +101,42 @@ namespace Meloman.Controllers
             {
                 track.Category = category.Name;
             }
+            else
+            {
+                Console.WriteLine("category to null");
+
+            }
             var author = GetTrackAuthor(track);
             if (author != null)
             {
                 track.AuthorName = author.Name;
                 track.AuthorSurname = author.Surname;
             }
+            else
+            {
+                Console.WriteLine("author to null");
+
+            }
 
             return View(track);
         }
 
         // GET: Track/Create
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
+            var currentUser = await _context.User.FirstOrDefaultAsync(
+                u => u.Id == HttpContext.Session.GetInt32(AccountController.UserIdKey)
+            );
+            if (currentUser == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+            if (currentUser.Role == null)
+            {
+                return StatusCode(403, "Access Denied.");
+            }
+            PopulateAuthorsDropDownList();
+            PopulateCategoriesDropDownList(currentUser.Id);
             return View();
         }
 
@@ -97,10 +145,34 @@ namespace Meloman.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Title,CreationDate")] Track track)
+        public async Task<IActionResult> Create([Bind("Id,Title,CreationDate")] Track track, IFormCollection form)
         {
+            var currentUser = await _context.User.FirstOrDefaultAsync(
+                u => u.Id == HttpContext.Session.GetInt32(AccountController.UserIdKey)
+            );
+            if (currentUser == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+            if (currentUser.Role == null)
+            {
+                return StatusCode(403, "Access Denied.");
+            }
+
+            string authorValue = form["AuthorId"].ToString();
+            string categoryValue = form["CategoryId"].ToString();
             if (ModelState.IsValid)
             {
+                track.AuthorId = null;
+                track.CategoryId = null;
+                if (authorValue != "-1")
+                {
+                    track.AuthorId = int.Parse(authorValue);
+                }
+                if (categoryValue != "-1")
+                {
+                    track.CategoryId = int.Parse(categoryValue);
+                }
                 _context.Add(track);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
@@ -111,6 +183,18 @@ namespace Meloman.Controllers
         // GET: Track/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
+            var currentUser = await _context.User.FirstOrDefaultAsync(
+                u => u.Id == HttpContext.Session.GetInt32(AccountController.UserIdKey)
+            );
+            if (currentUser == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+            if (currentUser.Role == null)
+            {
+                return StatusCode(403, "Access Denied.");
+            }
+
             if (id == null || _context.Track == null)
             {
                 return NotFound();
@@ -121,6 +205,9 @@ namespace Meloman.Controllers
             {
                 return NotFound();
             }
+
+            PopulateAuthorsDropDownList(track.AuthorId);
+            PopulateCategoriesDropDownList(currentUser.Id, track.CategoryId);
             return View(track);
         }
 
@@ -129,17 +216,41 @@ namespace Meloman.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Title,CreationDate")] Track track)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Title,CreationDate")] Track track, IFormCollection form)
         {
+            var currentUser = await _context.User.FirstOrDefaultAsync(
+                u => u.Id == HttpContext.Session.GetInt32(AccountController.UserIdKey)
+            );
+            if (currentUser == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+            if (currentUser.Role == null)
+            {
+                return StatusCode(403, "Access Denied.");
+            }
+
             if (id != track.Id)
             {
                 return NotFound();
             }
 
+            string authorValue = form["AuthorId"].ToString();
+            string categoryValue = form["CategoryId"].ToString();
             if (ModelState.IsValid)
             {
                 try
                 {
+                    track.AuthorId = null;
+                    track.CategoryId = null;
+                    if (authorValue != "-1")
+                    {
+                        track.AuthorId = int.Parse(authorValue);
+                    }
+                    if (categoryValue != "-1")
+                    {
+                        track.CategoryId = int.Parse(categoryValue);
+                    }
                     _context.Update(track);
                     await _context.SaveChangesAsync();
                 }
@@ -162,6 +273,18 @@ namespace Meloman.Controllers
         // GET: Track/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
+            var currentUser = await _context.User.FirstOrDefaultAsync(
+                u => u.Id == HttpContext.Session.GetInt32(AccountController.UserIdKey)
+            );
+            if (currentUser == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+            if (currentUser.Role == null)
+            {
+                return StatusCode(403, "Access Denied.");
+            }
+
             if (id == null || _context.Track == null)
             {
                 return NotFound();
@@ -182,6 +305,18 @@ namespace Meloman.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
+            var currentUser = await _context.User.FirstOrDefaultAsync(
+                u => u.Id == HttpContext.Session.GetInt32(AccountController.UserIdKey)
+            );
+            if (currentUser == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+            if (currentUser.Role == null)
+            {
+                return StatusCode(403, "Access Denied.");
+            }
+
             if (_context.Track == null)
             {
                 return Problem("Entity set 'MelomanContext.Track'  is null.");
@@ -254,6 +389,25 @@ namespace Meloman.Controllers
 
             return enumRes.AsEnumerable().ElementAt(0);
 
+        }
+
+        private void PopulateAuthorsDropDownList(object? selectedAuthor = null)
+        {
+            var chosenAuthors = from e in _context.Artist
+                                orderby e.Surname
+                                select new { Id = e.Id, Name = $"{e.Surname} {e.Name}" };
+            var res = chosenAuthors.AsNoTracking();
+            ViewBag.AuthorIds = new SelectList(res, "Id", "Name", selectedAuthor);
+        }
+
+        private void PopulateCategoriesDropDownList(int userId, object? selectedCategory = null)
+        {
+            var chosenCategories = from e in _context.Category
+                                   where e.UserId == null || e.UserId == userId
+                                   orderby e.Name
+                                   select e;
+            var res = chosenCategories.AsNoTracking();
+            ViewBag.CategoryIds = new SelectList(res, "Id", "Name", selectedCategory);
         }
     }
 }

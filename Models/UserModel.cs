@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 namespace Meloman.Models
@@ -11,15 +12,16 @@ namespace Meloman.Models
         [Display(Name = "Username"), Required, MaxLength(100)]
         public required string Username { get; set; }
 
-        [Required]
-        public required string PasswordHash { get; set; }
+        public string? PasswordHash { get; set; }
 
-        [Required]
-        public required string Salt { get; set; }
+        public string? Salt { get; set; }
 
         public string? Role { get; set; }
 
-        [Required, MaxLength(64)]
-        public required string ApiKey { get; set; }
+        [MaxLength(64)]
+        public string? ApiKey { get; set; }
+
+        [NotMapped]
+        public string? Password { get; set; }
     }
 }

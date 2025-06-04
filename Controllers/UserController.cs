@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Meloman.Data;
 using Meloman.Models;
 using Meloman.Filters;
+using Meloman.Helpers;
 
 namespace Meloman.Controllers
 {
@@ -29,9 +30,9 @@ namespace Meloman.Controllers
         [ServiceFilter(typeof(AdminAllowedAttribute))]
         public async Task<IActionResult> Index()
         {
-              return _context.User != null ? 
-                          View(await _context.User.ToListAsync()) :
-                          Problem("Entity set 'MelomanContext.User'  is null.");
+            return _context.User != null ?
+                        View(await _context.User.ToListAsync()) :
+                        Problem("Entity set 'MelomanContext.User'  is null.");
         }
 
         // GET: User/Details/5
@@ -64,13 +65,46 @@ namespace Meloman.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Username,PasswordHash,Salt,Role,ApiKey")] User user)
+        public async Task<IActionResult> Create([Bind("Id,Username,Password,Role")] User user)
         {
             if (ModelState.IsValid)
             {
-                _context.Add(user);
+                if (string.IsNullOrWhiteSpace(user.Username) || string.IsNullOrWhiteSpace(user.Password))
+                {
+                    ViewBag.Error = "All fields must be filled.";
+                    return View();
+                }
+
+                var existingUser = await _context.User
+                    .FirstOrDefaultAsync(u => u.Username == user.Username);
+
+                if (existingUser != null)
+                {
+                    ViewBag.Error = "User already registered!";
+                    return View();
+                }
+
+
+                string salt = PasswordHelper.GenerateSalt();
+                string hash = PasswordHelper.HashPassword(user.Password, salt);
+
+                var newUser = new User
+                {
+                    Username = user.Username,
+                    PasswordHash = hash,
+                    Salt = salt,
+                    ApiKey = Guid.NewGuid().ToString("N")
+                };
+
+                _context.User.Add(newUser);
                 await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+
+                return RedirectToAction("Login", "Account");
+            }
+
+            foreach (var error in ModelState.Values.SelectMany(v => v.Errors))
+            {
+                Console.WriteLine(error.ErrorMessage);
             }
 
             PrepareRoles();
@@ -111,7 +145,15 @@ namespace Meloman.Controllers
             {
                 try
                 {
-                    _context.Update(user);
+                    var foregoingUser = _context.User.FirstOrDefault(u => u.Id == user.Id);
+                    if (foregoingUser!.PasswordHash == null || (user.Password != null && user.Password != ""))
+                    {
+                        foregoingUser.Salt = PasswordHelper.GenerateSalt();
+                        foregoingUser.PasswordHash = PasswordHelper.HashPassword(user.Password ?? "", user.Salt);
+                        foregoingUser.ApiKey = Guid.NewGuid().ToString("N");
+                    }
+                    foregoingUser.Role = user.Role;
+                    _context.Update(foregoingUser);
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
@@ -164,14 +206,14 @@ namespace Meloman.Controllers
             {
                 _context.User.Remove(user);
             }
-            
+
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
         private bool UserExists(int id)
         {
-          return (_context.User?.Any(e => e.Id == id)).GetValueOrDefault();
+            return (_context.User?.Any(e => e.Id == id)).GetValueOrDefault();
         }
     }
 }

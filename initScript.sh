@@ -16,6 +16,5 @@ do
 dotnet aspnet-codegenerator controller -name "${model}Controller" -m "$model" -dc Meloman.Data.MelomanContext --relativeFolderPath Controllers --useDefaultLayout --referenceScriptLibraries -sqlite
 done
 
-dotnet ef migrations remove InitialCreate
 dotnet ef migrations add InitialCreate
 dotnet ef database update

@@ -9,10 +9,13 @@ namespace Meloman.Models
         [Display(Name = "Name")]
         public required string Name { get; set; }
         [Display(Name = "Added by User")]
-        public User? User { get; set; } // null means it is a genre
+        public int? UserId { get; set; } // null means it is a genre
         [NotMapped]
         [Display(Name = "Mark")]
         [DisplayFormat(NullDisplayText = "0")]
         public double? Mark { get; set; }
+        [NotMapped]
+        [Display(Name = "Author")]
+        public int? Author;
     }
 }

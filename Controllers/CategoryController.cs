@@ -24,24 +24,43 @@ namespace Meloman.Controllers
         [ServiceFilter(typeof(VerifiedUserAllowed))]
         public async Task<IActionResult> Index()
         {
+            var currentUser = await _context.User.FirstOrDefaultAsync(
+                u => u.Id == HttpContext.Session.GetInt32(AccountController.UserIdKey)
+            );
+            if (currentUser == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
             if (_context.Category == null)
             {
                 return Problem("Entity set 'MelomanContext.Artist'  is null.");
             }
-            var categories = await _context.Category.ToListAsync();
+
+            int? id = HttpContext.Session.GetInt32(AccountController.UserIdKey);
+            var categories = (await _context.Category.ToListAsync()).Where(cat =>
+            {
+                return cat.UserId == null || cat.UserId == id;
+            });
             return View(categories.Select(category =>
             {
                 category.Mark = GetCategoryMarkValue(category);
+                category.Author = category.UserId;
                 return category;
             }));
-            // return _context.Category != null ?
-            //             View(await _context.Category.ToListAsync()) :
-            //             Problem("Entity set 'MelomanContext.Category'  is null.");
         }
 
         // GET: Category/Details/5
         public async Task<IActionResult> Details(int? id)
         {
+            var currentUser = await _context.User.FirstOrDefaultAsync(
+                u => u.Id == HttpContext.Session.GetInt32(AccountController.UserIdKey)
+            );
+            if (currentUser == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
             if (id == null || _context.Category == null)
             {
                 return NotFound();
@@ -52,6 +71,12 @@ namespace Meloman.Controllers
             if (category == null)
             {
                 return NotFound();
+            }
+
+            if (category.UserId != null && category.UserId != currentUser.Id)
+            {
+                return StatusCode(403, "Access Denied.");
+
             }
             category.Mark = GetCategoryMarkValue(category);
 
@@ -71,16 +96,25 @@ namespace Meloman.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,Name,Mark")] Category category)
         {
+            var currentUser = await _context.User.FirstOrDefaultAsync(
+                u => u.Id == HttpContext.Session.GetInt32(AccountController.UserIdKey)
+            );
+            if (currentUser == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
             if (ModelState.IsValid)
             {
+                category.UserId = currentUser.Id;
                 _context.Add(category);
+                await _context.SaveChangesAsync();
                 if (category.Mark != null)
                 {
                     _context.Add(new CategoryMark
                     {
-                        Id = 0,
                         Category = category,
-                        User = null,
+                        UserId = currentUser.Id,
                         Mark = category.Mark
                     });
                 }
@@ -93,6 +127,14 @@ namespace Meloman.Controllers
         // GET: Category/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
+            var currentUser = await _context.User.FirstOrDefaultAsync(
+                u => u.Id == HttpContext.Session.GetInt32(AccountController.UserIdKey)
+            );
+            if (currentUser == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
             if (id == null || _context.Category == null)
             {
                 return NotFound();
@@ -103,6 +145,12 @@ namespace Meloman.Controllers
             {
                 return NotFound();
             }
+
+            if (category.UserId != currentUser.Id)
+            {
+                return StatusCode(403, "Access Denied.");
+            }
+
             category.Mark = GetCategoryMarkValue(category);
             return View(category);
         }
@@ -114,10 +162,26 @@ namespace Meloman.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Mark")] Category category)
         {
+            var currentUser = await _context.User.FirstOrDefaultAsync(
+                u => u.Id == HttpContext.Session.GetInt32(AccountController.UserIdKey)
+            );
+            if (currentUser == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
             if (id != category.Id)
             {
                 return NotFound();
             }
+
+            // no need to check, if there is any result - category has appropriate Id
+            var userId = _context.Category.Where(cat => cat.Id == category.Id).Select(cat => cat.UserId).First();
+            if (userId != currentUser.Id)
+            {
+                return StatusCode(403, "Access Denied.");
+            }
+            category.UserId = userId;
 
             if (ModelState.IsValid)
             {
@@ -128,7 +192,7 @@ namespace Meloman.Controllers
 
                     if (mark == null && category.Mark != null)
                     {
-                        _context.Add(new CategoryMark { Id = 0, Category = category, User = null, Mark = category.Mark });
+                        _context.Add(new CategoryMark { Category = category, UserId = currentUser.Id, Mark = category.Mark });
                     }
                     else if (mark != null)
                     {
@@ -157,6 +221,14 @@ namespace Meloman.Controllers
         // GET: Category/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
+            var currentUser = await _context.User.FirstOrDefaultAsync(
+                u => u.Id == HttpContext.Session.GetInt32(AccountController.UserIdKey)
+            );
+            if (currentUser == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
             if (id == null || _context.Category == null)
             {
                 return NotFound();
@@ -168,6 +240,11 @@ namespace Meloman.Controllers
             {
                 return NotFound();
             }
+            if (category.UserId != currentUser.Id)
+            {
+                return StatusCode(403, "Access Denied.");
+
+            }
             category.Mark = GetCategoryMarkValue(category);
 
             return View(category);
@@ -178,6 +255,14 @@ namespace Meloman.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
+            var currentUser = await _context.User.FirstOrDefaultAsync(
+                u => u.Id == HttpContext.Session.GetInt32(AccountController.UserIdKey)
+            );
+            if (currentUser == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
             if (_context.Category == null)
             {
                 return Problem("Entity set 'MelomanContext.Category'  is null.");
@@ -185,6 +270,11 @@ namespace Meloman.Controllers
             var category = await _context.Category.FindAsync(id);
             if (category != null)
             {
+                if (category.UserId != currentUser.Id)
+                {
+                    return StatusCode(403, "Access Denied.");
+
+                }
                 var mark = GetCategoryMark(category);
                 if (mark != null)
                 {

@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.Runtime.InteropServices;
+using System.Security.Cryptography;
 namespace Meloman.Models
 {
     public class User
@@ -16,6 +17,9 @@ namespace Meloman.Models
         [Required]
         public required string Salt { get; set; }
 
-        public string ?Role { get; set; }
+        public string? Role { get; set; }
+
+        [Required, MaxLength(64)]
+        public required string ApiKey { get; set; }
     }
 }

@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace Meloman4.Migrations
+namespace Meloman.Migrations
 {
     /// <inheritdoc />
     public partial class InitialCreate : Migration
@@ -35,7 +35,8 @@ namespace Meloman4.Migrations
                     Username = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
                     PasswordHash = table.Column<string>(type: "TEXT", nullable: false),
                     Salt = table.Column<string>(type: "TEXT", nullable: false),
-                    Role = table.Column<string>(type: "TEXT", nullable: true)
+                    Role = table.Column<string>(type: "TEXT", nullable: true),
+                    ApiKey = table.Column<string>(type: "TEXT", maxLength: 64, nullable: false)
                 },
                 constraints: table =>
                 {

@@ -60,7 +60,8 @@ namespace Meloman.Controllers
             {
                 Username = username,
                 PasswordHash = hash,
-                Salt = salt
+                Salt = salt,
+                ApiKey = Guid.NewGuid().ToString("N")
             };
 
             _context.User.Add(user);
@@ -101,7 +102,7 @@ namespace Meloman.Controllers
                 return View();
             }
 
-            HttpContext.Session.SetInt32("UserId", user.Id);
+            HttpContext.Session.SetInt32("UserId", user!.Id);
             HttpContext.Session.SetString("Username", user.Username);
 
             return RedirectToAction("Index", "Home");

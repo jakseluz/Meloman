@@ -41,6 +41,10 @@
                                 <a class="nav-link text-dark" asp-area="" asp-controller="User"
                                     asp-action="">Users</a>
                             </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-controller="ApiKey"
+                                    asp-action="">My API key</a>
+                            </li>
                             <li style="margin-left: auto; display: flex;">
                                 <a class="nav-link text-dark" asp-area="" asp-controller="Account"
                                     asp-action="Logout">Welcome, @Context.Session.GetString("Username")!</a>

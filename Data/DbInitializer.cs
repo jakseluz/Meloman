@@ -19,7 +19,8 @@ namespace Meloman.Data
                 Username = "admin",
                 PasswordHash = hash,
                 Salt = salt,
-                Role = "admin"
+                Role = "admin",
+                ApiKey = Guid.NewGuid().ToString("N")
             };
             context.User.Add(newUser);
             context.SaveChanges();

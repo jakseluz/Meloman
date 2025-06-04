@@ -8,10 +8,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace Meloman4.Migrations
+namespace Meloman.Migrations
 {
     [DbContext(typeof(MelomanContext))]
-    [Migration("20250603155652_InitialCreate")]
+    [Migration("20250603233235_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -138,6 +138,11 @@ namespace Meloman4.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
+
+                    b.Property<string>("ApiKey")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("PasswordHash")
                         .IsRequired()

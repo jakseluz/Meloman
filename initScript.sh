@@ -11,9 +11,18 @@ dotnet add package Microsoft.EntityFrameworkCore.SQLite --version 7.0.1
 dotnet add package Microsoft.VisualStudio.Web.CodeGeneration.Design --version 7.0.1
 dotnet add package Microsoft.EntityFrameworkCore.SqlServer --version 7.0.1
 
+# for REST API swagger
+dotnet add package Swashbuckle.AspNetCore
+
+# for REST API JWT token authorization
+dotnet add package Microsoft.AspNetCore.Authentication.JwtBearer
+dotnet add package System.IdentityModel.Tokens.Jwt
+
+
 for model in "Artist" "Track" "User" "Category" "CategoryMark" "ArtistMark"
 do
 dotnet aspnet-codegenerator controller -name "${model}Controller" -m "$model" -dc Meloman.Data.MelomanContext --relativeFolderPath Controllers --useDefaultLayout --referenceScriptLibraries -sqlite
+dotnet aspnet-codegenerator controller -name "${model}ApiController" -api -m "${model}" -dc MelomanContext --relativeFolderPath Controllers/Api -f
 done
 
 dotnet ef migrations remove InitialCreate

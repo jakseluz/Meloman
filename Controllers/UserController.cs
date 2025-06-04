@@ -64,7 +64,7 @@ namespace Meloman.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Username,PasswordHash,Salt,Role")] User user)
+        public async Task<IActionResult> Create([Bind("Id,Username,PasswordHash,Salt,Role,ApiKey")] User user)
         {
             if (ModelState.IsValid)
             {

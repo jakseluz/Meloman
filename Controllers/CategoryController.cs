@@ -31,6 +31,10 @@ namespace Meloman.Controllers
             {
                 return RedirectToAction("Login", "Account");
             }
+            if (_context.Artist == null)
+            {
+                return StatusCode(403, "Access Denied.");
+            }
 
             if (_context.Category == null)
             {
@@ -45,7 +49,6 @@ namespace Meloman.Controllers
             return View(categories.Select(category =>
             {
                 category.Mark = GetCategoryMarkValue(category);
-                category.Author = category.UserId;
                 return category;
             }));
         }
@@ -59,6 +62,10 @@ namespace Meloman.Controllers
             if (currentUser == null)
             {
                 return RedirectToAction("Login", "Account");
+            }
+            if (_context.Artist == null)
+            {
+                return StatusCode(403, "Access Denied.");
             }
 
             if (id == null || _context.Category == null)
@@ -84,17 +91,7 @@ namespace Meloman.Controllers
         }
 
         // GET: Category/Create
-        public IActionResult Create()
-        {
-            return View();
-        }
-
-        // POST: Category/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Name,Mark")] Category category)
+        public async Task<IActionResult> Create()
         {
             var currentUser = await _context.User.FirstOrDefaultAsync(
                 u => u.Id == HttpContext.Session.GetInt32(AccountController.UserIdKey)
@@ -103,10 +100,37 @@ namespace Meloman.Controllers
             {
                 return RedirectToAction("Login", "Account");
             }
+            if (_context.Artist == null)
+            {
+                return StatusCode(403, "Access Denied.");
+            }
+            ViewBag.Role = currentUser.Role;
+            return View();
+        }
+
+        // POST: Category/Create
+        // To protect from overposting attacks, enable the specific properties you want to bind to.
+        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create([Bind("Id,Name,Mark,IsGenre")] Category category)
+        {
+            var currentUser = await _context.User.FirstOrDefaultAsync(
+                u => u.Id == HttpContext.Session.GetInt32(AccountController.UserIdKey)
+            );
+            if (currentUser == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+            if (_context.Artist == null)
+            {
+                return StatusCode(403, "Access Denied.");
+            }
 
             if (ModelState.IsValid)
             {
-                category.UserId = currentUser.Id;
+                Console.WriteLine($"gatunek: {category.IsGenre}");
+                category.UserId = category.IsGenre ? null : currentUser.Id;
                 _context.Add(category);
                 await _context.SaveChangesAsync();
                 if (category.Mark != null)
@@ -133,6 +157,10 @@ namespace Meloman.Controllers
             if (currentUser == null)
             {
                 return RedirectToAction("Login", "Account");
+            }
+            if (_context.Artist == null)
+            {
+                return StatusCode(403, "Access Denied.");
             }
 
             if (id == null || _context.Category == null)
@@ -168,6 +196,10 @@ namespace Meloman.Controllers
             if (currentUser == null)
             {
                 return RedirectToAction("Login", "Account");
+            }
+            if (_context.Artist == null)
+            {
+                return StatusCode(403, "Access Denied.");
             }
 
             if (id != category.Id)
@@ -228,6 +260,10 @@ namespace Meloman.Controllers
             {
                 return RedirectToAction("Login", "Account");
             }
+            if (_context.Artist == null)
+            {
+                return StatusCode(403, "Access Denied.");
+            }
 
             if (id == null || _context.Category == null)
             {
@@ -261,6 +297,10 @@ namespace Meloman.Controllers
             if (currentUser == null)
             {
                 return RedirectToAction("Login", "Account");
+            }
+            if (_context.Artist == null)
+            {
+                return StatusCode(403, "Access Denied.");
             }
 
             if (_context.Category == null)

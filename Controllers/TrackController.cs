@@ -24,14 +24,41 @@ namespace Meloman.Controllers
         [ServiceFilter(typeof(VerifiedUserAllowed))]
         public async Task<IActionResult> Index()
         {
-            return _context.Track != null ?
-                        View(await _context.Track.ToListAsync()) :
-                        Problem("Entity set 'MelomanContext.Track'  is null.");
+            var currentUser = await _context.User.FirstOrDefaultAsync(
+                u => u.Id == HttpContext.Session.GetInt32(AccountController.UserIdKey)
+            );
+            if (currentUser == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+            if (currentUser.Role == null)
+            {
+                return StatusCode(403, "Access Denied.");
+            }
+
+            if (_context.Track == null)
+            {
+                return Problem("Entity set 'MelomanContext.Track'  is null.");
+            }
+            var tracks = await _context.Track.ToListAsync();
+            return View(tracks);
         }
 
         // GET: Track/Details/5
         public async Task<IActionResult> Details(int? id)
         {
+            var currentUser = await _context.User.FirstOrDefaultAsync(
+                u => u.Id == HttpContext.Session.GetInt32(AccountController.UserIdKey)
+            );
+            if (currentUser == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+            if (currentUser.Role == null)
+            {
+                return StatusCode(403, "Access Denied.");
+            }
+
             if (id == null || _context.Track == null)
             {
                 return NotFound();
@@ -42,6 +69,18 @@ namespace Meloman.Controllers
             if (track == null)
             {
                 return NotFound();
+            }
+
+            var category = GetTrackCategory(currentUser.Id, track);
+            if (category != null)
+            {
+                track.Category = category.Name;
+            }
+            var author = GetTrackAuthor(track);
+            if (author != null)
+            {
+                track.AuthorName = author.Name;
+                track.AuthorSurname = author.Surname;
             }
 
             return View(track);
@@ -152,14 +191,69 @@ namespace Meloman.Controllers
             {
                 _context.Track.Remove(track);
             }
-            
+
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
         private bool TrackExists(int id)
         {
-          return (_context.Track?.Any(e => e.Id == id)).GetValueOrDefault();
+            return (_context.Track?.Any(e => e.Id == id)).GetValueOrDefault();
+        }
+
+        private Artist? GetTrackAuthor(Track track)
+        {
+            if (_context.Artist == null)
+            {
+                return null;
+            }
+
+            var res = from author in _context.Artist
+                      where author.Id == track.AuthorId
+                      select author;
+
+            if (res == null)
+            {
+                return null;
+            }
+
+            var enumRes = res.AsEnumerable();
+
+            if (!enumRes.Any())
+            {
+                return null;
+            }
+
+            return enumRes.AsEnumerable().ElementAt(0);
+
+        }
+
+        private Category? GetTrackCategory(int userId, Track track)
+        {
+            if (_context.Category == null)
+            {
+                return null;
+            }
+
+            var res = from category in _context.Category
+                      where category.UserId == userId
+                      where category.Id == track.CategoryId
+                      select category;
+
+            if (res == null)
+            {
+                return null;
+            }
+
+            var enumRes = res.AsEnumerable();
+
+            if (!enumRes.Any())
+            {
+                return null;
+            }
+
+            return enumRes.AsEnumerable().ElementAt(0);
+
         }
     }
 }

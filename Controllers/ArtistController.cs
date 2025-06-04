@@ -9,7 +9,6 @@ using Meloman.Data;
 using Meloman.Models;
 using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.IdentityModel.Tokens;
-using Meloman.Filters;
 
 namespace Meloman.Controllers
 {
@@ -23,9 +22,20 @@ namespace Meloman.Controllers
         }
 
         // GET: Artist
-        [ServiceFilter(typeof(VerifiedUserAllowed))]
         public async Task<IActionResult> Index()
         {
+            var currentUser = await _context.User.FirstOrDefaultAsync(
+                u => u.Id == HttpContext.Session.GetInt32(AccountController.UserIdKey)
+            );
+            if (currentUser == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+            if (currentUser.Role == null)
+            {
+                return StatusCode(403, "Access Denied.");
+            }
+
             if (_context.Artist == null)
             {
                 return Problem("Entity set 'MelomanContext.Artist'  is null.");
@@ -41,6 +51,24 @@ namespace Meloman.Controllers
         // GET: Artist/Details/5
         public async Task<IActionResult> Details(int? id)
         {
+            var currentUser = await _context.User.FirstOrDefaultAsync(
+                u => u.Id == HttpContext.Session.GetInt32(AccountController.UserIdKey)
+            );
+            if (currentUser == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+            if (currentUser.Role == null)
+            {
+                return StatusCode(403, "Access Denied.");
+            }
+
+            if (_context.Artist == null)
+            {
+                return Problem("Entity set 'MelomanContext.Artist'  is null.");
+            }
+
+
             if (id == null || _context.Artist == null)
             {
                 return NotFound();
@@ -60,8 +88,25 @@ namespace Meloman.Controllers
         }
 
         // GET: Artist/Create
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
+            var currentUser = await _context.User.FirstOrDefaultAsync(
+                u => u.Id == HttpContext.Session.GetInt32(AccountController.UserIdKey)
+            );
+            if (currentUser == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+            if (currentUser.Role == null)
+            {
+                return StatusCode(403, "Access Denied.");
+            }
+
+            if (_context.Artist == null)
+            {
+                return Problem("Entity set 'MelomanContext.Artist'  is null.");
+            }
+
             return View();
         }
 
@@ -72,10 +117,27 @@ namespace Meloman.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,Name,Surname,BirthDate,Mark")] Artist artist)
         {
+            var currentUser = await _context.User.FirstOrDefaultAsync(
+                u => u.Id == HttpContext.Session.GetInt32(AccountController.UserIdKey)
+            );
+            if (currentUser == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+            if (currentUser.Role == null)
+            {
+                return StatusCode(403, "Access Denied.");
+            }
+            if (_context.Artist == null)
+            {
+                return Problem("Entity set 'MelomanContext.Artist'  is null.");
+            }
+
             if (ModelState.IsValid)
             {
                 _context.Add(artist);
-                _context.Add(new ArtistMark { Id = 0, Artist = artist, User = null, Mark = artist.Mark });
+                await _context.SaveChangesAsync();
+                _context.Add(new ArtistMark { ArtistId = artist.Id, UserId = currentUser.Id, Mark = artist.Mark });
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
@@ -85,6 +147,18 @@ namespace Meloman.Controllers
         // GET: Artist/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
+            var currentUser = await _context.User.FirstOrDefaultAsync(
+                u => u.Id == HttpContext.Session.GetInt32(AccountController.UserIdKey)
+            );
+            if (currentUser == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+            if (_context.Artist == null)
+            {
+                return Problem("Entity set 'MelomanContext.Artist'  is null.");
+            }
+
             if (id == null || _context.Artist == null)
             {
                 return NotFound();
@@ -106,6 +180,26 @@ namespace Meloman.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Surname,BirthDate,Mark")] Artist artist)
         {
+            var currentUser = await _context.User.FirstOrDefaultAsync(
+                u => u.Id == HttpContext.Session.GetInt32(AccountController.UserIdKey)
+            );
+            if (currentUser == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+            if (currentUser.Role == null)
+            {
+                return StatusCode(403, "Access Denied.");
+            }
+            if (currentUser.Role == null)
+            {
+                return StatusCode(403, "Access Denied.");
+            }
+            if (_context.Artist == null)
+            {
+                return Problem("Entity set 'MelomanContext.Artist'  is null.");
+            }
+
             if (id != artist.Id)
             {
                 return NotFound();
@@ -116,10 +210,11 @@ namespace Meloman.Controllers
                 try
                 {
                     _context.Update(artist);
+                    await _context.SaveChangesAsync();
                     var mark = GetArtistMark(artist);
                     if (mark == null && artist.Mark != null)
                     {
-                        _context.Add(new ArtistMark { Id = 0, Artist = artist, User = null, Mark = artist.Mark });
+                        _context.Add(new ArtistMark { Id = 0, ArtistId = artist.Id, UserId = currentUser.Id, Mark = artist.Mark });
                     }
                     else if (mark != null)
                     {
@@ -148,6 +243,18 @@ namespace Meloman.Controllers
         // GET: Artist/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
+            var currentUser = await _context.User.FirstOrDefaultAsync(
+                u => u.Id == HttpContext.Session.GetInt32(AccountController.UserIdKey)
+            );
+            if (currentUser == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+            if (_context.Artist == null)
+            {
+                return Problem("Entity set 'MelomanContext.Artist'  is null.");
+            }
+
             if (id == null || _context.Artist == null)
             {
                 return NotFound();
@@ -169,6 +276,22 @@ namespace Meloman.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
+            var currentUser = await _context.User.FirstOrDefaultAsync(
+                u => u.Id == HttpContext.Session.GetInt32(AccountController.UserIdKey)
+            );
+            if (currentUser == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+            if (currentUser.Role == null)
+            {
+                return StatusCode(403, "Access Denied.");
+            }
+            if (_context.Artist == null)
+            {
+                return Problem("Entity set 'MelomanContext.Artist'  is null.");
+            }
+
             if (_context.Artist == null)
             {
                 return Problem("Entity set 'MelomanContext.Artist'  is null.");
@@ -201,7 +324,7 @@ namespace Meloman.Controllers
             }
 
             var res = from mark in _context.ArtistMark
-                      where mark.Artist == artist
+                      where mark.ArtistId == artist.Id
                       select mark;
 
             if (res == null)

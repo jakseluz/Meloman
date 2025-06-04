@@ -15,7 +15,7 @@ namespace Meloman.Models
         [DisplayFormat(NullDisplayText = "0")]
         public double? Mark { get; set; }
         [NotMapped]
-        [Display(Name = "Author")]
-        public int? Author;
+        [Display(Name = "Genre")]
+        public bool IsGenre { get; set; }
     }
 }

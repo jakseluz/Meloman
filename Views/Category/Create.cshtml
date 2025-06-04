@@ -22,6 +22,18 @@
                 <input asp-for="Mark" class="form-control" />
                 <span asp-validation-for="Mark" class="text-danger"></span>
             </div>
+            @if (ViewBag.Role == "admin")
+            {
+                <div class="form-group">
+                    <label asp-for="IsGenre" class="form-check-label"></label>
+                    <input type="checkbox" asp-for="IsGenre" class="form-check" />
+                    <span asp-validation-for="IsGenre" class="text-danger"></span>
+                </div>
+            }
+            else
+            {
+                <input type="hidden" name="IsGenre" value="false" />
+            }
             <div class="form-group">
                 <input type="submit" value="Create" class="btn btn-primary" />
             </div>

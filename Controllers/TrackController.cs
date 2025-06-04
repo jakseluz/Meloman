@@ -41,20 +41,30 @@ namespace Meloman.Controllers
                 return Problem("Entity set 'MelomanContext.Track'  is null.");
             }
             var allCategories = _context.CategoryMark.ToList();
+            Console.WriteLine($"allCategories: {allCategories.Count}");
             var allArtists = _context.ArtistMark.ToList();
             var scoredTracks = _context.Track.ToList().Select(t =>
             {
                 var categoryScore = allCategories.Where(
-                    mark => mark?.Category?.Id == t.CategoryId && mark?.UserId == currentUser.Id
+                    mark =>
+                    {
+                        Console.WriteLine($"mark?.Category?.Id == t.CategoryId {mark?.Category?.Id == t.CategoryId}");
+                        Console.WriteLine($"mark.UserId == currentUser.Id {mark.UserId == currentUser.Id}");
+                        Console.WriteLine($"mark: {mark.Mark}");
+                        Console.WriteLine($"--- mark.Category == null: {mark.Category == null}");
+                        return mark?.Category?.Id == t.CategoryId && mark.UserId == currentUser.Id;
+                    }
                     ).FirstOrDefault()?.Mark;
+                Console.WriteLine($"categoryScore: {categoryScore}");
 
                 var artistScore = allArtists.Where(
-                    mark => mark?.ArtistId == t.AuthorId && mark?.UserId == currentUser.Id
+                    mark => mark.ArtistId == t.AuthorId && mark.UserId == currentUser.Id
                     ).FirstOrDefault()?.Mark;
 
                 double sum = 0;
                 if (categoryScore != null)
                 {
+                    Console.WriteLine($"categoryScore: jest nullem");
                     sum += (double)categoryScore;
                 }
                 if (artistScore != null)

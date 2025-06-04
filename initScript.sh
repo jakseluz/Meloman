@@ -25,6 +25,5 @@ dotnet aspnet-codegenerator controller -name "${model}Controller" -m "$model" -d
 dotnet aspnet-codegenerator controller -name "${model}ApiController" -api -m "${model}" -dc MelomanContext --relativeFolderPath Controllers/Api -f
 done
 
-dotnet ef migrations remove InitialCreate
 dotnet ef migrations add InitialCreate
 dotnet ef database update

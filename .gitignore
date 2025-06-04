@@ -1,3 +1,7 @@
+# should not be commited
+robocze.cstxt
+Meloman.Data.db
+
 # for dotnet to choose a proper dotnet version
 global.json
 
